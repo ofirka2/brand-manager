@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Palette, Edit2, Trash2, FolderOpen } from 'lucide-react';
+import { Plus, Palette, Edit2, Trash2, FolderOpen, DollarSign, Target } from 'lucide-react';
 import { useProject } from '../context/ProjectContext';
 import { Brand } from '../types';
 import CreateBrandModal from './CreateBrandModal';
@@ -67,6 +67,27 @@ export default function Brands() {
 
           <p className="text-gray-600 mb-4">{brand.description}</p>
 
+          <div className="grid grid-cols-2 gap-3 mb-4">
+            <div className="bg-gray-50 rounded-lg p-3">
+              <div className="flex items-center space-x-2 mb-1">
+                <DollarSign className="h-4 w-4 text-gray-600" />
+                <span className="text-xs font-medium text-gray-700">Budget</span>
+              </div>
+              <div className="text-lg font-bold text-gray-900">
+                ${brand.budget.toLocaleString()}
+              </div>
+            </div>
+            <div className="bg-gray-50 rounded-lg p-3">
+              <div className="flex items-center space-x-2 mb-1">
+                <Target className="h-4 w-4 text-gray-600" />
+                <span className="text-xs font-medium text-gray-700">Sales Goal</span>
+              </div>
+              <div className="text-lg font-bold text-gray-900">
+                ${brand.salesGoal.toLocaleString()}
+              </div>
+            </div>
+          </div>
+
           <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-1">
@@ -129,8 +150,9 @@ export default function Brands() {
           <div>
             <h3 className="text-sm font-medium text-blue-900">About Brands</h3>
             <p className="text-sm text-blue-700 mt-1">
-              Brands help organize your projects by client, company, or product line. Each brand has its own color scheme 
-              that will be applied to all projects under that brand, ensuring visual consistency across your portfolio.
+              Brands help organize your projects by client, company, or product line. Each brand has its own color scheme,
+              budget allocation, and sales targets that will be applied to all projects under that brand, ensuring visual 
+              consistency and financial tracking across your portfolio.
             </p>
           </div>
         </div>
@@ -141,7 +163,7 @@ export default function Brands() {
           <Palette className="h-12 w-12 text-gray-400 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-gray-900 mb-2">No brands yet</h3>
           <p className="text-gray-600 mb-4">
-            Create your first brand to organize projects by client, company, or product line.
+            Create your first brand to organize projects by client, company, or product line with budget and sales tracking.
           </p>
           <button
             onClick={() => setShowCreateModal(true)}

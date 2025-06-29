@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { AlertTriangle, Calendar, CheckCircle, Clock, TrendingUp, Palette } from 'lucide-react';
+import { AlertTriangle, Calendar, CheckCircle, Clock, TrendingUp, Palette, DollarSign, Target } from 'lucide-react';
 import { useProject } from '../context/ProjectContext';
 import { Task } from '../types';
 import { isOverdue, getDaysUntilDeadline, getTasksByDeadline } from '../utils/dateUtils';
@@ -68,6 +68,22 @@ export default function Dashboard() {
     };
   }, [allTasks]);
 
+  const brandStats = useMemo(() => {
+    return state.brands.map(brand => {
+      const brandProjects = state.projects.filter(p => p.brandId === brand.id);
+      const brandTasks = brandProjects.flatMap(p => p.tasks);
+      const completedTasks = brandTasks.filter(t => t.status === 'Completed');
+      
+      return {
+        ...brand,
+        projectsCount: brandProjects.length,
+        tasksCount: brandTasks.length,
+        completedTasks: completedTasks.length,
+        completionRate: brandTasks.length > 0 ? Math.round((completedTasks.length / brandTasks.length) * 100) : 0,
+      };
+    });
+  }, [state.brands, state.projects]);
+
   const StatCard = ({ title, value, icon: Icon, color, subtitle }: any) => (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
       <div className="flex items-center">
@@ -117,6 +133,55 @@ export default function Dashboard() {
           subtitle={`${stats.completed} of ${stats.total} completed`}
         />
       </div>
+
+      {/* Brand Overview */}
+      {state.brands.length > 0 && (
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Brand Overview</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {brandStats.map(brand => (
+              <div key={brand.id} className="border border-gray-200 rounded-lg p-4">
+                <div className="flex items-center space-x-3 mb-3">
+                  <div 
+                    className="w-4 h-4 rounded-full"
+                    style={{ backgroundColor: brand.primaryColor }}
+                  ></div>
+                  <h4 className="font-medium text-gray-900">{brand.name}</h4>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-2 mb-3 text-sm">
+                  <div className="flex items-center space-x-1">
+                    <DollarSign className="h-3 w-3 text-gray-500" />
+                    <span className="text-gray-600">${brand.budget.toLocaleString()}</span>
+                  </div>
+                  <div className="flex items-center space-x-1">
+                    <Target className="h-3 w-3 text-gray-500" />
+                    <span className="text-gray-600">${brand.salesGoal.toLocaleString()}</span>
+                  </div>
+                </div>
+                
+                <div className="text-sm text-gray-600 mb-2">
+                  {brand.projectsCount} projects • {brand.tasksCount} tasks
+                </div>
+                
+                <div className="flex justify-between items-center mb-1">
+                  <span className="text-xs text-gray-500">Progress</span>
+                  <span className="text-xs font-medium text-gray-900">{brand.completionRate}%</span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div
+                    className="h-2 rounded-full transition-all duration-300"
+                    style={{ 
+                      width: `${brand.completionRate}%`,
+                      backgroundColor: brand.primaryColor
+                    }}
+                  ></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Project Progress */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">

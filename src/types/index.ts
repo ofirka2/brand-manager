@@ -28,6 +28,8 @@ export interface Brand {
   primaryColor: string;
   secondaryColor: string;
   accentColor: string;
+  budget: number;
+  salesGoal: number;
   createdAt: string;
   updatedAt: string;
 }

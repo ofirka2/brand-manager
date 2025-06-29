@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Palette } from 'lucide-react';
+import { X, Palette, DollarSign, Target } from 'lucide-react';
 import { useProject } from '../context/ProjectContext';
 import { Brand } from '../types';
 import { generateId } from '../utils/projectUtils';
@@ -17,6 +17,8 @@ export default function CreateBrandModal({ brand, onClose }: CreateBrandModalPro
     primaryColor: '#3B82F6',
     secondaryColor: '#1E40AF',
     accentColor: '#60A5FA',
+    budget: '',
+    salesGoal: '',
   });
 
   useEffect(() => {
@@ -27,6 +29,8 @@ export default function CreateBrandModal({ brand, onClose }: CreateBrandModalPro
         primaryColor: brand.primaryColor,
         secondaryColor: brand.secondaryColor,
         accentColor: brand.accentColor,
+        budget: brand.budget.toString(),
+        salesGoal: brand.salesGoal.toString(),
       });
     }
   }, [brand]);
@@ -41,6 +45,8 @@ export default function CreateBrandModal({ brand, onClose }: CreateBrandModalPro
       primaryColor: formData.primaryColor,
       secondaryColor: formData.secondaryColor,
       accentColor: formData.accentColor,
+      budget: parseFloat(formData.budget) || 0,
+      salesGoal: parseFloat(formData.salesGoal) || 0,
       createdAt: brand?.createdAt || new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
@@ -74,9 +80,14 @@ export default function CreateBrandModal({ brand, onClose }: CreateBrandModalPro
     });
   };
 
+  const formatCurrency = (value: string) => {
+    const numericValue = value.replace(/[^0-9.]/g, '');
+    return numericValue;
+  };
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl mx-4 max-h-screen overflow-y-auto">
+      <div className="bg-white rounded-lg shadow-xl w-full max-w-3xl mx-4 max-h-screen overflow-y-auto">
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <h2 className="text-xl font-semibold text-gray-900">
             {brand ? 'Edit Brand' : 'Create New Brand'}
@@ -116,6 +127,46 @@ export default function CreateBrandModal({ brand, onClose }: CreateBrandModalPro
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="Brief brand description"
               />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Budget
+              </label>
+              <div className="relative">
+                <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={formData.budget}
+                  onChange={(e) => setFormData({ ...formData, budget: e.target.value })}
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="0.00"
+                />
+              </div>
+              <p className="text-sm text-gray-500 mt-1">Total budget allocated for this brand</p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Sales Goal
+              </label>
+              <div className="relative">
+                <Target className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={formData.salesGoal}
+                  onChange={(e) => setFormData({ ...formData, salesGoal: e.target.value })}
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="0.00"
+                />
+              </div>
+              <p className="text-sm text-gray-500 mt-1">Target sales revenue for this brand</p>
             </div>
           </div>
 
@@ -219,10 +270,10 @@ export default function CreateBrandModal({ brand, onClose }: CreateBrandModalPro
           <div className="bg-gray-50 rounded-lg p-4">
             <div className="flex items-center space-x-2 mb-3">
               <Palette className="h-4 w-4 text-gray-600" />
-              <span className="text-sm font-medium text-gray-700">Color Preview</span>
+              <span className="text-sm font-medium text-gray-700">Brand Preview</span>
             </div>
             <div 
-              className="h-20 rounded-lg relative overflow-hidden"
+              className="h-20 rounded-lg relative overflow-hidden mb-4"
               style={{ 
                 background: `linear-gradient(135deg, ${formData.primaryColor} 0%, ${formData.secondaryColor} 100%)` 
               }}
@@ -236,6 +287,33 @@ export default function CreateBrandModal({ brand, onClose }: CreateBrandModalPro
                 <span className="text-white font-medium text-sm">{formData.name || 'Brand Name'}</span>
               </div>
             </div>
+            
+            {(formData.budget || formData.salesGoal) && (
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                {formData.budget && (
+                  <div className="bg-white rounded p-3 border">
+                    <div className="flex items-center space-x-2 mb-1">
+                      <DollarSign className="h-4 w-4 text-gray-600" />
+                      <span className="font-medium text-gray-700">Budget</span>
+                    </div>
+                    <div className="text-lg font-bold text-gray-900">
+                      ${parseFloat(formData.budget || '0').toLocaleString()}
+                    </div>
+                  </div>
+                )}
+                {formData.salesGoal && (
+                  <div className="bg-white rounded p-3 border">
+                    <div className="flex items-center space-x-2 mb-1">
+                      <Target className="h-4 w-4 text-gray-600" />
+                      <span className="font-medium text-gray-700">Sales Goal</span>
+                    </div>
+                    <div className="text-lg font-bold text-gray-900">
+                      ${parseFloat(formData.salesGoal || '0').toLocaleString()}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           <div className="flex space-x-3 pt-4">

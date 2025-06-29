@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutDashboard, FolderOpen, BookTemplate as FileTemplate, Settings, Bell } from 'lucide-react';
+import { LayoutDashboard, FolderOpen, BookTemplate as FileTemplate, Settings, Bell, Palette } from 'lucide-react';
 import { useProject } from '../context/ProjectContext';
 
 export default function Header() {
@@ -7,6 +7,7 @@ export default function Header() {
 
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { id: 'brands', label: 'Brands', icon: Palette },
     { id: 'projects', label: 'Projects', icon: FolderOpen },
     { id: 'templates', label: 'Templates', icon: FileTemplate },
     { id: 'settings', label: 'Settings', icon: Settings },

@@ -12,12 +12,13 @@ interface ProjectDetailModalProps {
 }
 
 export default function ProjectDetailModal({ project, onClose }: ProjectDetailModalProps) {
-  const { dispatch } = useProject();
+  const { state, dispatch } = useProject();
   const [showCreateTask, setShowCreateTask] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
   const progress = calculateProjectProgress(project);
   const overdueTasks = project.tasks.filter(task => isOverdue(task.deadline) && task.status !== 'Completed');
+  const brand = state.brands.find(b => b.id === project.brandId);
 
   const handleDeleteTask = (taskId: string) => {
     if (confirm('Are you sure you want to delete this task?')) {
@@ -78,10 +79,24 @@ export default function ProjectDetailModal({ project, onClose }: ProjectDetailMo
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl mx-4 max-h-screen overflow-y-auto">
+        {brand && (
+          <div 
+            className="h-3"
+            style={{ 
+              background: `linear-gradient(90deg, ${brand.primaryColor} 0%, ${brand.secondaryColor} 100%)` 
+            }}
+          ></div>
+        )}
+        
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div className="flex items-center space-x-3">
-            <div className="w-4 h-4 rounded-full" style={{ backgroundColor: project.color }}></div>
-            <h2 className="text-xl font-semibold text-gray-900">{project.name}</h2>
+            {brand && (
+              <div className="w-4 h-4 rounded-full" style={{ backgroundColor: brand.accentColor }}></div>
+            )}
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900">{project.name}</h2>
+              {brand && <p className="text-sm text-gray-600">{brand.name}</p>}
+            </div>
           </div>
           <button
             onClick={onClose}
@@ -119,8 +134,11 @@ export default function ProjectDetailModal({ project, onClose }: ProjectDetailMo
               </div>
               <div className="w-full bg-gray-200 rounded-full h-3">
                 <div
-                  className="bg-blue-500 h-3 rounded-full transition-all duration-300"
-                  style={{ width: `${progress}%` }}
+                  className="h-3 rounded-full transition-all duration-300"
+                  style={{ 
+                    width: `${progress}%`,
+                    backgroundColor: brand?.primaryColor || '#3B82F6'
+                  }}
                 ></div>
               </div>
             </div>
@@ -130,7 +148,8 @@ export default function ProjectDetailModal({ project, onClose }: ProjectDetailMo
             <h3 className="text-lg font-semibold text-gray-900">Tasks</h3>
             <button
               onClick={() => setShowCreateTask(true)}
-              className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors flex items-center space-x-2"
+              className="text-white px-4 py-2 rounded-md hover:opacity-90 transition-colors flex items-center space-x-2"
+              style={{ backgroundColor: brand?.primaryColor || '#3B82F6' }}
             >
               <Plus className="h-4 w-4" />
               <span>Add Task</span>

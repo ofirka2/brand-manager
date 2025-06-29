@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { X, BookTemplate as FileTemplate, Eye } from 'lucide-react';
+import { X, BookTemplate as FileTemplate, Eye, Palette } from 'lucide-react';
 import { useProject } from '../context/ProjectContext';
 import { Project, ProjectTemplate } from '../types';
-import { generateId, getProjectColors } from '../utils/projectUtils';
+import { generateId } from '../utils/projectUtils';
 
 interface CreateProjectModalProps {
   onClose: () => void;
@@ -13,7 +13,7 @@ export default function CreateProjectModal({ onClose }: CreateProjectModalProps)
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    color: getProjectColors()[0],
+    brandId: '',
     templateId: '',
   });
   const [selectedTemplate, setSelectedTemplate] = useState<ProjectTemplate | null>(null);
@@ -41,7 +41,7 @@ export default function CreateProjectModal({ onClose }: CreateProjectModalProps)
       id: generateId(),
       name: formData.name,
       description: formData.description,
-      color: formData.color,
+      brandId: formData.brandId,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       tasks: [],
@@ -145,6 +145,8 @@ export default function CreateProjectModal({ onClose }: CreateProjectModalProps)
     </div>
   );
 
+  const selectedBrand = state.brands.find(b => b.id === formData.brandId);
+
   return (
     <>
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -160,6 +162,64 @@ export default function CreateProjectModal({ onClose }: CreateProjectModalProps)
           </div>
 
           <form onSubmit={handleSubmit} className="p-6 space-y-6">
+            {/* Brand Selection */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-3">
+                Select Brand <span className="text-red-500">*</span>
+              </label>
+              {state.brands.length === 0 ? (
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                  <div className="flex items-start space-x-3">
+                    <Palette className="h-5 w-5 text-yellow-600 mt-0.5" />
+                    <div>
+                      <p className="text-sm text-yellow-800 font-medium">No brands available</p>
+                      <p className="text-sm text-yellow-700 mt-1">
+                        You need to create at least one brand before creating a project. 
+                        Go to the Brands section to create your first brand.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {state.brands.map(brand => (
+                    <div
+                      key={brand.id}
+                      className={`border rounded-lg p-4 cursor-pointer transition-all ${
+                        formData.brandId === brand.id
+                          ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200'
+                          : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                      }`}
+                      onClick={() => setFormData({ ...formData, brandId: brand.id })}
+                    >
+                      <div className="flex items-center space-x-3 mb-2">
+                        <div 
+                          className="w-4 h-4 rounded-full"
+                          style={{ backgroundColor: brand.primaryColor }}
+                        ></div>
+                        <h4 className="font-medium text-gray-900">{brand.name}</h4>
+                      </div>
+                      <p className="text-sm text-gray-600">{brand.description}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+              
+              {selectedBrand && (
+                <div className="mt-3 bg-green-50 border border-green-200 rounded-lg p-3">
+                  <div className="flex items-start space-x-2">
+                    <Palette className="h-4 w-4 text-green-600 mt-0.5" />
+                    <div className="text-sm">
+                      <p className="text-green-900 font-medium">Brand Selected: {selectedBrand.name}</p>
+                      <p className="text-green-700">
+                        This project will use the brand's color scheme and be organized under this brand.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
             {/* Template Selection */}
             {state.templates.length > 0 && (
               <div>
@@ -226,35 +286,16 @@ export default function CreateProjectModal({ onClose }: CreateProjectModalProps)
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Project Color
+                  Description
                 </label>
-                <div className="flex space-x-2">
-                  {getProjectColors().map(color => (
-                    <button
-                      key={color}
-                      type="button"
-                      onClick={() => setFormData({ ...formData, color })}
-                      className={`w-8 h-8 rounded-full border-2 transition-all ${
-                        formData.color === color ? 'border-gray-400 ring-2 ring-gray-200' : 'border-gray-200'
-                      }`}
-                      style={{ backgroundColor: color }}
-                    />
-                  ))}
-                </div>
+                <input
+                  type="text"
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Brief project description"
+                />
               </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Description
-              </label>
-              <textarea
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                rows={3}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Brief project description"
-              />
             </div>
 
             <div className="flex space-x-3 pt-4">
@@ -267,7 +308,8 @@ export default function CreateProjectModal({ onClose }: CreateProjectModalProps)
               </button>
               <button
                 type="submit"
-                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                disabled={!formData.brandId || state.brands.length === 0}
+                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
               >
                 Create Project
               </button>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Search, FolderOpen, Calendar, Users, MoreHorizontal } from 'lucide-react';
+import { Plus, Search, FolderOpen, Calendar, Users, MoreHorizontal, Palette } from 'lucide-react';
 import { useProject } from '../context/ProjectContext';
 import { Project } from '../types';
 import { calculateProjectProgress } from '../utils/projectUtils';
@@ -25,56 +25,83 @@ export default function Projects() {
       return deadline < new Date() && task.status !== 'Completed';
     }).length;
 
+    const brand = state.brands.find(b => b.id === project.brandId);
+
     return (
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex items-center space-x-3">
-            <div className="w-4 h-4 rounded-full" style={{ backgroundColor: project.color }}></div>
-            <h3 className="text-lg font-semibold text-gray-900">{project.name}</h3>
-          </div>
-          <button className="p-1 text-gray-400 hover:text-gray-600 rounded">
-            <MoreHorizontal className="h-4 w-4" />
-          </button>
-        </div>
-
-        <p className="text-gray-600 mb-4">{project.description}</p>
-
-        <div className="space-y-3">
-          <div className="flex justify-between items-center">
-            <span className="text-sm text-gray-500">Progress</span>
-            <span className="text-sm font-medium text-gray-900">{progress}%</span>
-          </div>
-          <div className="w-full bg-gray-200 rounded-full h-2">
-            <div
-              className="bg-blue-500 h-2 rounded-full transition-all duration-300"
-              style={{ width: `${progress}%` }}
-            ></div>
-          </div>
-
-          <div className="flex items-center justify-between text-sm text-gray-500">
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-1">
-                <FolderOpen className="h-4 w-4" />
-                <span>{project.tasks.length} tasks</span>
-              </div>
-              <div className="flex items-center space-x-1">
-                <Calendar className="h-4 w-4" />
-                <span>{completedTasks} completed</span>
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
+        {brand && (
+          <div 
+            className="h-3"
+            style={{ 
+              background: `linear-gradient(90deg, ${brand.primaryColor} 0%, ${brand.secondaryColor} 100%)` 
+            }}
+          ></div>
+        )}
+        
+        <div className="p-6">
+          <div className="flex items-start justify-between mb-4">
+            <div className="flex items-center space-x-3">
+              {brand && (
+                <div 
+                  className="w-4 h-4 rounded-full"
+                  style={{ backgroundColor: brand.accentColor }}
+                ></div>
+              )}
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">{project.name}</h3>
+                {brand && (
+                  <p className="text-sm text-gray-500">{brand.name}</p>
+                )}
               </div>
             </div>
-            {overdueTasks > 0 && (
-              <span className="text-red-600 font-medium">{overdueTasks} overdue</span>
-            )}
+            <button className="p-1 text-gray-400 hover:text-gray-600 rounded">
+              <MoreHorizontal className="h-4 w-4" />
+            </button>
           </div>
-        </div>
 
-        <div className="mt-4 pt-4 border-t border-gray-200">
-          <button
-            onClick={() => setSelectedProject(project)}
-            className="w-full bg-blue-50 text-blue-700 px-4 py-2 rounded-md hover:bg-blue-100 transition-colors font-medium"
-          >
-            View Details
-          </button>
+          <p className="text-gray-600 mb-4">{project.description}</p>
+
+          <div className="space-y-3">
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-gray-500">Progress</span>
+              <span className="text-sm font-medium text-gray-900">{progress}%</span>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-2">
+              <div
+                className="h-2 rounded-full transition-all duration-300"
+                style={{ 
+                  width: `${progress}%`,
+                  backgroundColor: brand?.primaryColor || '#3B82F6'
+                }}
+              ></div>
+            </div>
+
+            <div className="flex items-center justify-between text-sm text-gray-500">
+              <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-1">
+                  <FolderOpen className="h-4 w-4" />
+                  <span>{project.tasks.length} tasks</span>
+                </div>
+                <div className="flex items-center space-x-1">
+                  <Calendar className="h-4 w-4" />
+                  <span>{completedTasks} completed</span>
+                </div>
+              </div>
+              {overdueTasks > 0 && (
+                <span className="text-red-600 font-medium">{overdueTasks} overdue</span>
+              )}
+            </div>
+          </div>
+
+          <div className="mt-4 pt-4 border-t border-gray-200">
+            <button
+              onClick={() => setSelectedProject(project)}
+              className="w-full text-white px-4 py-2 rounded-md hover:opacity-90 transition-colors font-medium"
+              style={{ backgroundColor: brand?.primaryColor || '#3B82F6' }}
+            >
+              View Details
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -92,6 +119,26 @@ export default function Projects() {
           <span>New Project</span>
         </button>
       </div>
+
+      {state.brands.length === 0 && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+          <div className="flex items-start space-x-3">
+            <Palette className="h-5 w-5 text-yellow-600 mt-0.5" />
+            <div>
+              <p className="text-sm text-yellow-800 font-medium">No brands available</p>
+              <p className="text-sm text-yellow-700 mt-1">
+                You need to create at least one brand before creating projects. 
+                <button 
+                  onClick={() => dispatch({ type: 'SET_CURRENT_VIEW', payload: 'brands' })}
+                  className="underline hover:no-underline ml-1"
+                >
+                  Go to Brands section
+                </button> to get started.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="relative">
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -116,12 +163,14 @@ export default function Projects() {
               : 'Try adjusting your search terms or create a new project.'
             }
           </p>
-          <button
-            onClick={() => setShowCreateModal(true)}
-            className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
-          >
-            Create Project
-          </button>
+          {state.brands.length > 0 && (
+            <button
+              onClick={() => setShowCreateModal(true)}
+              className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
+            >
+              Create Project
+            </button>
+          )}
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { AlertTriangle, Calendar, CheckCircle, Clock, TrendingUp } from 'lucide-react';
+import { AlertTriangle, Calendar, CheckCircle, Clock, TrendingUp, Palette } from 'lucide-react';
 import { useProject } from '../context/ProjectContext';
 import { Task } from '../types';
 import { isOverdue, getDaysUntilDeadline, getTasksByDeadline } from '../utils/dateUtils';
@@ -10,10 +10,16 @@ export default function Dashboard() {
   const { state } = useProject();
 
   const allTasks = useMemo(() => {
-    return state.projects.flatMap(project => 
-      project.tasks.map(task => ({ ...task, projectName: project.name, projectColor: project.color }))
-    );
-  }, [state.projects]);
+    return state.projects.flatMap(project => {
+      const brand = state.brands.find(b => b.id === project.brandId);
+      return project.tasks.map(task => ({ 
+        ...task, 
+        projectName: project.name, 
+        brandName: brand?.name || 'Unknown Brand',
+        brandColor: brand?.primaryColor || '#3B82F6'
+      }));
+    });
+  }, [state.projects, state.brands]);
 
   const filteredTasks = useMemo(() => {
     let filtered = [...allTasks];
@@ -27,6 +33,13 @@ export default function Dashboard() {
     if (state.filters.category.length > 0) {
       filtered = filtered.filter(task => state.filters.category.includes(task.category));
     }
+    if (state.filters.brand.length > 0) {
+      filtered = filtered.filter(task => {
+        const project = state.projects.find(p => p.id === task.projectId);
+        const brand = state.brands.find(b => b.id === project?.brandId);
+        return brand && state.filters.brand.includes(brand.name);
+      });
+    }
     if (state.filters.dateRange) {
       filtered = filtered.filter(task => {
         const taskDate = new Date(task.deadline);
@@ -37,7 +50,7 @@ export default function Dashboard() {
     }
 
     return sortTasksByDeadline(filtered);
-  }, [allTasks, state.filters]);
+  }, [allTasks, state.filters, state.projects, state.brands]);
 
   const stats = useMemo(() => {
     const overdueTasks = getOverdueTasks(allTasks);
@@ -111,18 +124,25 @@ export default function Dashboard() {
         <div className="space-y-4">
           {state.projects.map(project => {
             const progress = calculateProjectProgress(project);
+            const brand = state.brands.find(b => b.id === project.brandId);
             return (
               <div key={project.id} className="flex items-center space-x-4">
-                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: project.color }}></div>
+                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: brand?.primaryColor || '#3B82F6' }}></div>
                 <div className="flex-1">
                   <div className="flex justify-between items-center mb-1">
-                    <span className="text-sm font-medium text-gray-900">{project.name}</span>
+                    <div>
+                      <span className="text-sm font-medium text-gray-900">{project.name}</span>
+                      {brand && <span className="text-xs text-gray-500 ml-2">({brand.name})</span>}
+                    </div>
                     <span className="text-sm text-gray-500">{progress}%</span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
                     <div
-                      className="bg-blue-500 h-2 rounded-full transition-all duration-300"
-                      style={{ width: `${progress}%` }}
+                      className="h-2 rounded-full transition-all duration-300"
+                      style={{ 
+                        width: `${progress}%`,
+                        backgroundColor: brand?.primaryColor || '#3B82F6'
+                      }}
                     ></div>
                   </div>
                 </div>
@@ -156,7 +176,7 @@ export default function Dashboard() {
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center space-x-3 mb-2">
-                        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: (task as any).projectColor }}></div>
+                        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: (task as any).brandColor }}></div>
                         <h4 className="text-lg font-medium text-gray-900">{task.subject}</h4>
                         <span className={`px-2 py-1 text-xs font-medium rounded-full border ${getPriorityColor(task.priority)}`}>
                           {task.priority}
@@ -168,6 +188,8 @@ export default function Dashboard() {
                       <p className="text-gray-600 mb-2">{task.description}</p>
                       <div className="flex items-center space-x-4 text-sm text-gray-500">
                         <span>{(task as any).projectName}</span>
+                        <span>•</span>
+                        <span>{(task as any).brandName}</span>
                         <span>•</span>
                         <span>{task.category}</span>
                         <span>•</span>

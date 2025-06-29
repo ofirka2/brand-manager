@@ -1,18 +1,23 @@
 import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
-import { Project, Task, ProjectTemplate, NotificationSettings, FilterOptions, UserSettings } from '../types';
+import { Project, Task, ProjectTemplate, NotificationSettings, FilterOptions, UserSettings, Brand } from '../types';
 import { loadFromStorage, saveToStorage } from '../utils/storage';
 
 interface ProjectState {
+  brands: Brand[];
   projects: Project[];
   templates: ProjectTemplate[];
   userSettings: UserSettings;
   notifications: NotificationSettings;
   filters: FilterOptions;
   selectedProject: string | null;
-  currentView: 'dashboard' | 'projects' | 'templates' | 'settings';
+  currentView: 'dashboard' | 'projects' | 'templates' | 'brands' | 'settings';
 }
 
 type ProjectAction =
+  | { type: 'SET_BRANDS'; payload: Brand[] }
+  | { type: 'ADD_BRAND'; payload: Brand }
+  | { type: 'UPDATE_BRAND'; payload: Brand }
+  | { type: 'DELETE_BRAND'; payload: string }
   | { type: 'SET_PROJECTS'; payload: Project[] }
   | { type: 'ADD_PROJECT'; payload: Project }
   | { type: 'UPDATE_PROJECT'; payload: Project }
@@ -30,6 +35,7 @@ type ProjectAction =
   | { type: 'SET_CURRENT_VIEW'; payload: ProjectState['currentView'] };
 
 const initialState: ProjectState = {
+  brands: [],
   projects: [],
   templates: [],
   userSettings: {
@@ -51,6 +57,7 @@ const initialState: ProjectState = {
     priority: [],
     status: [],
     category: [],
+    brand: [],
     dateRange: null,
   },
   selectedProject: null,
@@ -59,6 +66,21 @@ const initialState: ProjectState = {
 
 function projectReducer(state: ProjectState, action: ProjectAction): ProjectState {
   switch (action.type) {
+    case 'SET_BRANDS':
+      return { ...state, brands: action.payload };
+    case 'ADD_BRAND':
+      return { ...state, brands: [...state.brands, action.payload] };
+    case 'UPDATE_BRAND':
+      return {
+        ...state,
+        brands: state.brands.map(b => b.id === action.payload.id ? action.payload : b),
+      };
+    case 'DELETE_BRAND':
+      return {
+        ...state,
+        brands: state.brands.filter(b => b.id !== action.payload),
+        projects: state.projects.filter(p => p.brandId !== action.payload),
+      };
     case 'SET_PROJECTS':
       return { ...state, projects: action.payload };
     case 'ADD_PROJECT':
@@ -134,11 +156,15 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(projectReducer, initialState);
 
   useEffect(() => {
+    const savedBrands = loadFromStorage('brands');
     const savedProjects = loadFromStorage('projects');
     const savedTemplates = loadFromStorage('templates');
     const savedUserSettings = loadFromStorage('userSettings');
     const savedNotifications = loadFromStorage('notifications');
 
+    if (savedBrands) {
+      dispatch({ type: 'SET_BRANDS', payload: savedBrands });
+    }
     if (savedProjects) {
       dispatch({ type: 'SET_PROJECTS', payload: savedProjects });
     }
@@ -152,6 +178,10 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
       dispatch({ type: 'SET_NOTIFICATIONS', payload: savedNotifications });
     }
   }, []);
+
+  useEffect(() => {
+    saveToStorage('brands', state.brands);
+  }, [state.brands]);
 
   useEffect(() => {
     saveToStorage('projects', state.projects);

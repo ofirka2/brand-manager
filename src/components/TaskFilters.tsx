@@ -8,8 +8,9 @@ export default function TaskFilters() {
   const priorities = ['Low', 'Medium', 'High', 'Urgent'];
   const statuses = ['Not Started', 'In Progress', 'Under Review', 'Completed'];
   const categories = ['Development', 'Design', 'Marketing', 'Research', 'Testing', 'Documentation', 'Meeting', 'Other'];
+  const brands = state.brands.map(brand => brand.name);
 
-  const toggleFilter = (filterType: 'priority' | 'status' | 'category', value: string) => {
+  const toggleFilter = (filterType: 'priority' | 'status' | 'category' | 'brand', value: string) => {
     const currentFilters = state.filters[filterType];
     const newFilters = currentFilters.includes(value)
       ? currentFilters.filter(f => f !== value)
@@ -31,6 +32,7 @@ export default function TaskFilters() {
         priority: [],
         status: [],
         category: [],
+        brand: [],
         dateRange: null,
       },
     });
@@ -40,6 +42,7 @@ export default function TaskFilters() {
     state.filters.priority.length > 0 ||
     state.filters.status.length > 0 ||
     state.filters.category.length > 0 ||
+    state.filters.brand.length > 0 ||
     state.filters.dateRange !== null;
 
   const FilterGroup = ({ title, options, filterType, activeFilters }: any) => (
@@ -81,7 +84,7 @@ export default function TaskFilters() {
         )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <FilterGroup
           title="Priority"
           options={priorities}
@@ -100,6 +103,14 @@ export default function TaskFilters() {
           filterType="category"
           activeFilters={state.filters.category}
         />
+        {brands.length > 0 && (
+          <FilterGroup
+            title="Brand"
+            options={brands}
+            filterType="brand"
+            activeFilters={state.filters.brand}
+          />
+        )}
       </div>
     </div>
   );

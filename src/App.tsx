@@ -2,6 +2,7 @@ import React from 'react';
 import { ProjectProvider, useProject } from './context/ProjectContext';
 import Header from './components/Header';
 import Dashboard from './components/Dashboard';
+import Brands from './components/Brands';
 import Projects from './components/Projects';
 import Templates from './components/Templates';
 import Settings from './components/Settings';
@@ -13,6 +14,8 @@ function AppContent() {
     switch (state.currentView) {
       case 'dashboard':
         return <Dashboard />;
+      case 'brands':
+        return <Brands />;
       case 'projects':
         return <Projects />;
       case 'templates':

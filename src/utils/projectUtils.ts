@@ -25,7 +25,7 @@ export function sortTasksByDeadline(tasks: Task[]): Task[] {
   return [...tasks].sort((a, b) => new Date(a.deadline).getTime() - new Date(b.deadline).getTime());
 }
 
-export function getProjectColors(): string[] {
+export function getBrandColors(): string[] {
   return [
     '#3B82F6', // Blue
     '#10B981', // Emerald

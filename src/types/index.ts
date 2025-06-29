@@ -21,13 +21,24 @@ export interface Task {
   actualHours?: number;
 }
 
+export interface Brand {
+  id: string;
+  name: string;
+  description: string;
+  primaryColor: string;
+  secondaryColor: string;
+  accentColor: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface Project {
   id: string;
   name: string;
   description: string;
+  brandId: string;
   createdAt: string;
   updatedAt: string;
-  color: string;
   tasks: Task[];
 }
 
@@ -60,6 +71,7 @@ export interface FilterOptions {
   priority: string[];
   status: string[];
   category: string[];
+  brand: string[];
   dateRange: {
     start: string;
     end: string;

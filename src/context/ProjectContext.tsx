@@ -10,7 +10,7 @@ interface ProjectState {
   notifications: NotificationSettings;
   filters: FilterOptions;
   selectedProject: string | null;
-  currentView: 'dashboard' | 'projects' | 'templates' | 'brands' | 'settings';
+  currentView: 'dashboard' | 'projects' | 'templates' | 'brands' | 'settings' | 'gantt';
 }
 
 type ProjectAction =

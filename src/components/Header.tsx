@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutDashboard, FolderOpen, BookTemplate as FileTemplate, Settings, Bell, Palette } from 'lucide-react';
+import { LayoutDashboard, FolderOpen, BookTemplate as FileTemplate, Settings, Bell, Palette, BarChart3 } from 'lucide-react';
 import { useProject } from '../context/ProjectContext';
 
 export default function Header() {
@@ -9,6 +9,7 @@ export default function Header() {
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'brands', label: 'Brands', icon: Palette },
     { id: 'projects', label: 'Projects', icon: FolderOpen },
+    { id: 'gantt', label: 'Gantt Chart', icon: BarChart3 },
     { id: 'templates', label: 'Templates', icon: FileTemplate },
     { id: 'settings', label: 'Settings', icon: Settings },
   ];

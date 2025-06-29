@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
-import { Plus, Palette, Edit2, Trash2, FolderOpen, DollarSign, Target } from 'lucide-react';
+import { Plus, Palette, Edit2, Trash2, FolderOpen, DollarSign, Target, Eye } from 'lucide-react';
 import { useProject } from '../context/ProjectContext';
 import { Brand } from '../types';
 import CreateBrandModal from './CreateBrandModal';
+import BrandDetailModal from './BrandDetailModal';
 
 export default function Brands() {
   const { state, dispatch } = useProject();
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedBrand, setSelectedBrand] = useState<Brand | null>(null);
+  const [brandToEdit, setBrandToEdit] = useState<Brand | null>(null);
 
   const handleDeleteBrand = (brandId: string) => {
     const projectsCount = state.projects.filter(p => p.brandId === brandId).length;
@@ -34,24 +36,51 @@ export default function Brands() {
     return (
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
         <div 
-          className="h-24 relative"
+          className="h-24 relative cursor-pointer"
           style={{ 
             background: `linear-gradient(135deg, ${brand.primaryColor} 0%, ${brand.secondaryColor} 100%)` 
           }}
+          onClick={() => setSelectedBrand(brand)}
         >
           <div className="absolute inset-0 bg-black bg-opacity-10"></div>
           <div className="absolute top-4 right-4 flex items-center space-x-2">
             <button
-              onClick={() => setSelectedBrand(brand)}
+              onClick={(e) => {
+                e.stopPropagation();
+                setSelectedBrand(brand);
+              }}
               className="p-1 text-white hover:text-gray-200 transition-colors bg-black bg-opacity-20 rounded"
+              title="View Details"
+            >
+              <Eye className="h-4 w-4" />
+            </button>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setBrandToEdit(brand);
+              }}
+              className="p-1 text-white hover:text-gray-200 transition-colors bg-black bg-opacity-20 rounded"
+              title="Edit Brand"
             >
               <Edit2 className="h-4 w-4" />
             </button>
             <button
-              onClick={() => handleDeleteBrand(brand.id)}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleDeleteBrand(brand.id);
+              }}
               className="p-1 text-white hover:text-red-200 transition-colors bg-black bg-opacity-20 rounded"
+              title="Delete Brand"
             >
               <Trash2 className="h-4 w-4" />
+            </button>
+          </div>
+          <div className="absolute bottom-3 left-3">
+            <button
+              onClick={() => setSelectedBrand(brand)}
+              className="text-white hover:text-gray-200 transition-colors"
+            >
+              <h3 className="text-lg font-semibold">{brand.name}</h3>
             </button>
           </div>
         </div>
@@ -62,10 +91,13 @@ export default function Brands() {
               className="w-4 h-4 rounded-full border-2 border-white shadow-sm"
               style={{ backgroundColor: brand.accentColor }}
             ></div>
-            <h3 className="text-lg font-semibold text-gray-900">{brand.name}</h3>
+            <button
+              onClick={() => setSelectedBrand(brand)}
+              className="text-gray-600 hover:text-gray-900 transition-colors text-left"
+            >
+              <p>{brand.description}</p>
+            </button>
           </div>
-
-          <p className="text-gray-600 mb-4">{brand.description}</p>
 
           <div className="grid grid-cols-2 gap-3 mb-4">
             <div className="bg-gray-50 rounded-lg p-3">
@@ -122,9 +154,17 @@ export default function Brands() {
           </div>
 
           <div className="mt-4 pt-4 border-t border-gray-200">
-            <div className="text-xs text-gray-500">
-              Created: {new Date(brand.createdAt).toLocaleDateString()}
-            </div>
+            <button
+              onClick={() => setSelectedBrand(brand)}
+              className="w-full text-white px-4 py-2 rounded-md hover:opacity-90 transition-colors font-medium"
+              style={{ backgroundColor: brand.primaryColor }}
+            >
+              View Details
+            </button>
+          </div>
+
+          <div className="mt-2 text-xs text-gray-500">
+            Created: {new Date(brand.createdAt).toLocaleDateString()}
           </div>
         </div>
       </div>
@@ -152,7 +192,7 @@ export default function Brands() {
             <p className="text-sm text-blue-700 mt-1">
               Brands help organize your projects by client, company, or product line. Each brand has its own color scheme,
               budget allocation, and sales targets that will be applied to all projects under that brand, ensuring visual 
-              consistency and financial tracking across your portfolio.
+              consistency and financial tracking across your portfolio. Click on any brand to view detailed analytics.
             </p>
           </div>
         </div>
@@ -182,11 +222,21 @@ export default function Brands() {
 
       {showCreateModal && (
         <CreateBrandModal
+          onClose={() => setShowCreateModal(false)}
+        />
+      )}
+
+      {brandToEdit && (
+        <CreateBrandModal
+          brand={brandToEdit}
+          onClose={() => setBrandToEdit(null)}
+        />
+      )}
+
+      {selectedBrand && (
+        <BrandDetailModal
           brand={selectedBrand}
-          onClose={() => {
-            setShowCreateModal(false);
-            setSelectedBrand(null);
-          }}
+          onClose={() => setSelectedBrand(null)}
         />
       )}
     </div>
